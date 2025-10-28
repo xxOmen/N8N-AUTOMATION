@@ -1,159 +1,101 @@
 import streamlit as st
 from datetime import datetime
 
-# =========================
+# ======================================================
 # SITE CONFIG
-# =========================
-st.set_page_config(page_title="Articla — IGN-Inspired Blog", layout="wide")
+# ======================================================
+st.set_page_config(page_title="ShopVerse — Mock E-Commerce", layout="wide")
+st.title("🛍️ ShopVerse — Streamlit Demo Store")
 
-# =========================
-# DESIGN SYSTEM
-# =========================
-PRIMARY = "#EF4444"      # Red (IGN-inspired)
-SECONDARY = "#F59E0B"    # Amber accent
-SUCCESS = "#10B981"      # Emerald
-ERROR = "#DC2626"        # Red
-NEUTRAL_BG = "#F9FAFB"   # Light gray background
-TEXT_COLOR = "#111827"   # Near-black
-CAPTION_COLOR = "#6B7280" # Gray text
+# ======================================================
+# MOCK DATABASE
+# ======================================================
+PRODUCTS = [
+    {
+        "id": 1,
+        "name": "Wireless Headphones",
+        "price": 59.99,
+        "category": "Audio",
+        "image": "https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=600&q=60",
+        "description": "High-quality wireless headphones with noise cancellation and 20-hour battery life."
+    },
+    {
+        "id": 2,
+        "name": "Smartwatch Pro",
+        "price": 129.99,
+        "category": "Wearables",
+        "image": "https://images.unsplash.com/photo-1523475496153-3d6cc450b0fa?auto=format&fit=crop&w=600&q=60",
+        "description": "Track fitness, sleep, and notifications with the Smartwatch Pro. Waterproof and lightweight."
+    },
+    {
+        "id": 3,
+        "name": "Mechanical Keyboard",
+        "price": 89.99,
+        "category": "Accessories",
+        "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=60",
+        "description": "RGB mechanical keyboard with tactile switches for gaming and productivity."
+    },
+    {
+        "id": 4,
+        "name": "4K Action Camera",
+        "price": 149.99,
+        "category": "Cameras",
+        "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=60",
+        "description": "Capture adventures in stunning 4K with waterproof case and wide-angle lens."
+    }
+]
 
-# =========================
-# GLOBAL STYLE (CSS)
-# =========================
-st.markdown(f"""
-    <style>
-    body {{
-        background-color: {NEUTRAL_BG};
-        color: {TEXT_COLOR};
-        font-family: 'Inter', sans-serif;
-    }}
-    h1, h2, h3 {{
-        font-weight: 700;
-        color: {TEXT_COLOR};
-    }}
-    h1 {{ font-size: 36px; }}
-    h2 {{ font-size: 24px; margin-top: 32px; }}
-    h3 {{ font-size: 20px; margin-bottom: 8px; }}
-    p, li, label {{
-        font-size: 16px;
-        line-height: 1.6;
-    }}
-    .featured {{
-        background-color: white;
-        border-radius: 24px;
-        padding: 32px;
-        margin-bottom: 32px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }}
-    .article-card {{
-        background-color: white;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        transition: 0.2s;
-    }}
-    .article-card:hover {{
-        transform: translateY(-4px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }}
-    .stButton>button {{
-        background-color: {PRIMARY};
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 18px;
-        font-weight: 600;
-        transition: 0.2s;
-    }}
-    .stButton>button:hover {{
-        background-color: {SECONDARY};
-        transform: scale(1.02);
-    }}
-    .meta {{
-        font-size: 14px;
-        color: {CAPTION_COLOR};
-        margin-bottom: 12px;
-    }}
-    .thumbnail {{
-        border-radius: 12px;
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-        margin-bottom: 12px;
-    }}
-    </style>
-""", unsafe_allow_html=True)
+# ======================================================
+# SESSION STATE INITIALIZATION
+# ======================================================
+if "cart" not in st.session_state:
+    st.session_state.cart = []
 
-# =========================
-# HEADER
-# =========================
-st.title("🎮 Articla — IGN-Inspired Blog")
-st.caption("Share your latest thoughts, stories, and reviews.")
+# ======================================================
+# SIDEBAR: SHOPPING CART
+# ======================================================
+with st.sidebar:
+    st.header("🛒 Your Cart")
+    total = 0
+    if st.session_state.cart:
+        for item in st.session_state.cart:
+            st.write(f"**{item['name']}** — ${item['price']:.2f}")
+            total += item["price"]
+        st.write("---")
+        st.subheader(f"Total: ${total:.2f}")
+        if st.button("Checkout"):
+            st.success("✅ Checkout complete! Thank you for your purchase.")
+            st.session_state.cart = []
+    else:
+        st.info("Your cart is empty.")
 
-# =========================
-# ARTICLE FORM
-# =========================
-st.subheader("📝 Share a New Article")
-with st.form("article_form", clear_on_submit=True):
-    title = st.text_input("Title", placeholder="Enter an engaging title...")
-    author = st.text_input("Author", placeholder="Your name")
-    image_url = st.text_input("Thumbnail Image URL (optional)", placeholder="Paste image URL...")
-    content = st.text_area("Article Content", placeholder="Write your story...", height=200)
-    submitted = st.form_submit_button("Publish Article")
+# ======================================================
+# PRODUCT LISTING
+# ======================================================
+st.markdown("### 🧩 Featured Products")
 
-    if submitted:
-        if title and author and content:
-            if "articles" not in st.session_state:
-                st.session_state.articles = []
-            st.session_state.articles.append({
-                "title": title,
-                "author": author,
-                "content": content,
-                "image": image_url,
-                "date": datetime.now().strftime("%b %d, %Y")
-            })
-            st.success("✅ Article published!")
-        else:
-            st.error("⚠️ Please fill in all required fields.")
+cols = st.columns(2)
+for i, product in enumerate(PRODUCTS):
+    col = cols[i % 2]
+    with col:
+        st.image(product["image"], use_column_width=True)
+        st.subheader(product["name"])
+        st.caption(product["category"])
+        st.write(product["description"])
+        st.markdown(f"**Price:** ${product['price']:.2f}")
+        if st.button(f"Add to Cart 🛍️", key=f"add_{product['id']}"):
+            st.session_state.cart.append(product)
+            st.success(f"Added {product['name']} to your cart!")
 
-# =========================
-# DISPLAY ARTICLES
-# =========================
-if "articles" not in st.session_state or len(st.session_state.articles) == 0:
-    st.info("No articles yet. Be the first to publish!")
-else:
-    articles = st.session_state.articles
-    featured = articles[-1]
-
-    # Featured Article
-    st.markdown("<h2>🌟 Featured Article</h2>", unsafe_allow_html=True)
-    with st.container():
-        st.markdown(f"""
-            <div class="featured">
-                {'<img src="' + featured['image'] + '" class="thumbnail">' if featured['image'] else ''}
-                <h2>{featured['title']}</h2>
-                <div class="meta">By {featured['author']} — {featured['date']}</div>
-                <p>{featured['content']}</p>
-            </div>
-        """, unsafe_allow_html=True)
-
-    # Other Articles (Grid Layout)
-    st.markdown("<h2>📰 More Articles</h2>", unsafe_allow_html=True)
-    cols = st.columns(2)
-    for i, article in enumerate(reversed(articles[:-1])):
-        col = cols[i % 2]
-        with col:
-            st.markdown(f"""
-                <div class="article-card">
-                    {'<img src="' + article['image'] + '" class="thumbnail">' if article['image'] else ''}
-                    <h3>{article['title']}</h3>
-                    <div class="meta">By {article['author']} — {article['date']}</div>
-                    <p>{article['content'][:200]}...</p>
-                </div>
-            """, unsafe_allow_html=True)
-
-# =========================
-# FOOTER
-# =========================
+# ======================================================
+# MOCK RAG DATABASE PREVIEW
+# ======================================================
 st.markdown("---")
-st.caption("© 2025 Articla | Inspired by IGN | Built with ❤️ using Streamlit")
+st.subheader("📦 Product Database (for RAG / search systems)")
+st.dataframe(PRODUCTS)
+
+# ======================================================
+# FOOTER
+# ======================================================
+st.markdown("---")
+st.caption("© 2025 ShopVerse | Built with ❤️ using Streamlit")
