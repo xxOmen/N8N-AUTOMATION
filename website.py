@@ -18,7 +18,6 @@ st.title("🛍️ ShopVerse PK — Mock E-Commerce Site")
 # ======================================================
 # CONSTANTS
 # ======================================================
-ORDERS_FILE = "orders.csv"
 WEBHOOK_URL = "https://omenkit.app.n8n.cloud/webhook/order-confirmation"
 
 # ======================================================
